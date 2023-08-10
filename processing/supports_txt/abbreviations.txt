@@ -1,0 +1,81 @@
+dc, được
+đc, được
+ads, quảng cáo
+ad, quảng cáo
+qc, quảng cáo
+đt, điện thoại
+ko, không
+k, không
+dell, không
+hk, không
+kg, không
+hok, không
+kh, không
+khg, không
+\b(m.n|mn|mng)\b, mọi người
+\bip\b, iphone
+lun, luôn
+(chẹo|trịu), triệu
+cóa, có
+\b(e)\b, em
+app, ứng dụng
+(mk|m|mik), mình
+ts, tới
+\br\b, rồi
+(trc|tr), Trước
+prmax, promax
+(đt|dt), điện thoại
+nx, nữa
+(cx|cũg), cũng
+\b(ae)\b, anh em
+ng, người
+\b(h)\b, giờ
+hs, học sinh
+sv, sinh viên
+(đg|đag), đang
+tgdd, thế giới di động
+tq, Trung Quốc
+(pít|bt|pik), biết
+khmai, khuyến mãi
+\bsd\b, sử dụng
+(wa|wá), quá
+nhìu, nhiều
+dùg, dùng
+nhiu, nhiêu
+ns, nói
+(thik|thík), thích
+đr, đúng rồi
+vn, việt nam
+ak, à
+tks, cảm ơn
+\bsp\b, sản phẩm
+ngta, người ta
+\bj\b, gì
+bth , bình thường
+ák, á
+hc, học
+sx, sản xuất
+ktr, kiểm tra
+kqt, Không quan tâm
+đáh, đánh
+trg, trong
+stk, số tài khoản
+(chx|ch), chưa
+nt, nhắn tin
+đou, đâu
+sđt, số điện thoại
+(bg|bjo|bh), bây giờ
+ntn, như thế nào
+(z|v|dzậy), vậy
+ok, tốt
+nc, nước
+qt, quan taam
+h, giờ
+yt, youtube
+fb, facebook
+\b(t|tao|tớ|tau|tui)\b, Tôi
+qte, bản quốc tế
+ms, mới
+(bnhiu|bn), bao nhiêu
+(qtam|qt), quan tâm
+cmt, bình luận
