@@ -1,5 +1,5 @@
 default_language_version:
-    python: python3.9.15
+    python: python3.9.16
 
 repos:
 -   repo: https://github.com/pre-commit/pre-commit-hooks
@@ -44,3 +44,9 @@ repos:
     -   id: mypy
         additional_dependencies: [types-all]
         exclude: ^testing/resources/
+
+exclude: |
+    (?x)(
+        ^merged_uit_sa_ds/|
+        ^merged_vi_nli_ds/| 
+    )
