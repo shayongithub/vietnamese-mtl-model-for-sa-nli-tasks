@@ -11,51 +11,54 @@ import torch.nn as nn
 from loguru import logger
 from transformers import AutoModel
 from transformers import AutoTokenizer
+import transformers
 
+
+transformers.logging.set_verbosity_error()
 
 """-----------------Pre-processing input-----------------"""
 
 
 def remove_special_characters(text):
     # Remove special characters
-    text = re.sub(r'[^\w\s]', '', text)
+    text = re.sub(r"[^\w\s]", "", text)
     return text
 
 
 def remove_dates(text):
     # Define a regular expression pattern to match dates in number format
-    date_pattern = r'\b\d{1,2}[/-]\d{1,2}[/-]\d{2,4}\b'
+    date_pattern = r"\b\d{1,2}[/-]\d{1,2}[/-]\d{2,4}\b"
 
     # Find all matches of the date pattern in the text
     matches = re.findall(date_pattern, text)
 
     # Remove the matched dates from the text
     for match in matches:
-        text = text.replace(match, '')
+        text = text.replace(match, "")
 
     return text
 
 
 def remove_timestamps_and_whitespace(text):
     # Remove timestamps
-    text = re.sub(r'\d{1,2}:\d{2}(?::\d{2})?', '', text)
+    text = re.sub(r"\d{1,2}:\d{2}(?::\d{2})?", "", text)
     # Remove date
     text = re.sub(
-        r'\b(\d{1,2}\s+(?:tháng\s1|tháng\s2|tháng\s3|tháng\s4|tháng\s5|tháng\s6|tháng\s7|tháng\s8|tháng\s9|tháng\s10|tháng\s11|tháng\s12)\s+\d{2,4}|(?:tháng\s1|tháng\s2|tháng\s3|tháng\s4|tháng\s5|tháng\s6|tháng\s7|tháng\s8|tháng\s9|tháng\s10|tháng\s11|tháng\s12)\s+\d{1,2}\s+\d{2,4})|(?:tháng\s1|tháng\s2|tháng\s3|tháng\s4|tháng\s5|tháng\s6|tháng\s7|tháng\s8|tháng\s9|tháng\s10|tháng\s11|tháng\s12)\b',  # noqa: E501
-        '',
+        r"\b(\d{1,2}\s+(?:tháng\s1|tháng\s2|tháng\s3|tháng\s4|tháng\s5|tháng\s6|tháng\s7|tháng\s8|tháng\s9|tháng\s10|tháng\s11|tháng\s12)\s+\d{2,4}|(?:tháng\s1|tháng\s2|tháng\s3|tháng\s4|tháng\s5|tháng\s6|tháng\s7|tháng\s8|tháng\s9|tháng\s10|tháng\s11|tháng\s12)\s+\d{1,2}\s+\d{2,4})|(?:tháng\s1|tháng\s2|tháng\s3|tháng\s4|tháng\s5|tháng\s6|tháng\s7|tháng\s8|tháng\s9|tháng\s10|tháng\s11|tháng\s12)\b",  # noqa: E501
+        "",
         text,
     )
     # Remove extra white space
-    text = re.sub(r'\s+', ' ', text)
+    text = re.sub(r"\s+", " ", text)
     # Also remove None as it appears in some context
-    text = text.replace('none', '')
+    text = text.replace("none", "")
     return text.strip()
 
 
 def get_stopword_list(stop_file_path):
     """load stop words"""
 
-    with open(stop_file_path, 'r', encoding='utf-8') as f:
+    with open(stop_file_path, "r", encoding="utf-8") as f:
         stopwords = f.readlines()
         stop_set = set(m.strip() for m in stopwords)
         return list(frozenset(stop_set))
@@ -69,7 +72,7 @@ def remove_stopwords(text, stopwords):
     words = [word for word in words if word not in stopwords]
 
     # Rejoin the words into a string
-    text = ' '.join(words)
+    text = " ".join(words)
     return text
 
 
@@ -138,20 +141,22 @@ class MultiTaskModel(nn.Module):
         # self.tasks = tasks
 
         self.encoder = AutoModel.from_pretrained(
-            encoder_name_or_path, return_dict=False,
+            encoder_name_or_path,
+            return_dict=False,
         )
 
         self.output_heads = nn.ModuleDict()
         for task in tasks:
             decoder = self._create_output_head(
-                self.encoder.config.hidden_size, task,
+                self.encoder.config.hidden_size,
+                task,
             )
             # ModuleDict requires keys to be strings
             self.output_heads[str(task.task_id)] = decoder
 
     @staticmethod
     def _create_output_head(encoder_hidden_size: int, task):
-        if task.task_type == 'seq_classification':
+        if task.task_type == "seq_classification":
             return SequenceClassificationHead(encoder_hidden_size, task.num_labels)
         else:
             raise NotImplementedError()
@@ -212,14 +217,14 @@ def load_mtl_model(encoder, state_dict_path, tasks, use_cpu=False):
     load_mtl_model = MultiTaskModel(encoder, tasks=tasks)
 
     if use_cpu is True:
-        map_location = torch.device('cpu')
+        map_location = torch.device("cpu")
     else:
         if not torch.cuda.is_available():
-            logger.warning('PyTorch is running on CPU')
+            logger.warning("PyTorch is running on CPU")
 
-            raise ValueError('No GPU available')
+            raise ValueError("No GPU available")
 
-        map_location = torch.device('cuda')
+        map_location = torch.device("cuda")
 
     load_mtl_model.load_state_dict(
         torch.load(state_dict_path, map_location=map_location),
@@ -231,58 +236,58 @@ def load_mtl_model(encoder, state_dict_path, tasks, use_cpu=False):
 
 def postprocess_nli(
     model_outputs,
-    label2id={'entailment': 0, 'neutral': 1, 'contradiction': 2},
+    label2id={"entailment": 0, "neutral": 1, "contradiction": 2},
     multi_label=False,
 ):
-    candidate_labels = [
-        outputs['candidate_label']
-        for outputs in model_outputs
-    ]
-    sequences = [outputs['sequence'] for outputs in model_outputs]
+    candidate_labels = [outputs["candidate_label"] for outputs in model_outputs]
+    sequences = [outputs["sequence"] for outputs in model_outputs]
 
-    logits = np.concatenate([
-        output['logits'].numpy()
-        for output in model_outputs
-    ])
+    logits = np.concatenate([output["logits"].numpy() for output in model_outputs])
     N = logits.shape[0]
     n = len(candidate_labels)
 
     num_sequences = N // n
     reshaped_outputs = logits.reshape((num_sequences, n, -1))
 
-    entailment_id = label2id['entailment']
-    contradiction_id = label2id['contradiction']
+    entailment_id = label2id["entailment"]
+    contradiction_id = label2id["contradiction"]
 
     if multi_label or len(candidate_labels) == 1:
         # softmax over the entailment vs. contradiction dim for each label independently
         entail_contr_logits = reshaped_outputs[
-            ..., [
-                contradiction_id, entailment_id,
+            ...,
+            [
+                contradiction_id,
+                entailment_id,
             ],
         ]
         scores = np.exp(entail_contr_logits) / np.exp(entail_contr_logits).sum(
-            -1, keepdims=True,
+            -1,
+            keepdims=True,
         )
         scores = scores[..., 1]
     else:
         # softmax the "entailment" logits over all candidate labels
         entail_logits = reshaped_outputs[..., entailment_id]
-        scores = np.exp(entail_logits) / \
-            np.exp(entail_logits).sum(-1, keepdims=True)
+        scores = np.exp(entail_logits) / np.exp(entail_logits).sum(-1, keepdims=True)
 
     top_inds = list(reversed(scores[0].argsort()))
 
     return {
-        'sequence': sequences[0],
-        'labels': [candidate_labels[i] for i in top_inds],
-        'scores': scores[0, top_inds].tolist(),
+        "sequence": sequences[0],
+        "labels": [candidate_labels[i] for i in top_inds],
+        "scores": scores[0, top_inds].tolist(),
     }
 
 
 def sa_classifier(model: nn.Module, tokenizer, text: str, sa_task_id):
     # Inputs for sentiment analysis
     inputs_sa = tokenizer(
-        text, padding='max_length', max_length=512, truncation=True, return_tensors='pt',
+        text,
+        padding="max_length",
+        max_length=512,
+        truncation=True,
+        return_tensors="pt",
     )
 
     with torch.no_grad():
@@ -301,7 +306,7 @@ def sa_classifier(model: nn.Module, tokenizer, text: str, sa_task_id):
     preds = probs_sa[0].tolist()
     print(preds)
 
-    return {'negative': preds[0], 'positive': preds[1]}
+    return {"negative": preds[0], "positive": preds[1]}
 
 
 def zsl_classifier(
@@ -310,15 +315,12 @@ def zsl_classifier(
     premise: str,
     candidate_labels: List,
     zsl_task_id,
-    hypothesis_template: str = 'Đây là một câu nói có nội dung liên quan tới chủ đề {}',
+    hypothesis_template: str = "Đây là một câu nói có nội dung liên quan tới chủ đề {}",
     multi_label: bool = False,
 ):
     sequence_pairs = []
     sequence_pairs.extend(
-        [
-            [premise, hypothesis_template.format(label)]
-            for label in candidate_labels
-        ],
+        [[premise, hypothesis_template.format(label)] for label in candidate_labels],
     )
 
     model_outputs = []
@@ -327,26 +329,32 @@ def zsl_classifier(
         inputs_nli = tokenizer(
             sequence_pair[0],
             sequence_pair[1],
-            padding='max_length',
+            padding="max_length",
             max_length=512,
             truncation=True,
-            return_tensors='pt',
+            return_tensors="pt",
         )
 
         with torch.no_grad():
             outputs = model(**inputs_nli, task_ids=zsl_task_id)[0]
             model_outputs.append(
                 {
-                    'candidate_label': candidate_label,
-                    'sequence': premise,
-                    'logits': outputs,
+                    "candidate_label": candidate_label,
+                    "sequence": premise,
+                    "logits": outputs,
                 },
             )
 
     result = postprocess_nli(model_outputs, multi_label=multi_label)
     print(result)
 
-    return result['labels'][0], f'{float(result["scores"][0]):.3%}'
+    result_dict = {}
+
+    for label, score in zip(result["labels"], result["scores"]):
+        result_dict[label] = score
+
+    # return result['labels'][0], f'{float(result["scores"][0]):.3%}'
+    return result_dict
 
 
 """-----------------Gradio setup-----------------"""
@@ -354,15 +362,15 @@ def zsl_classifier(
 
 task_sa = Task(
     task_id=0,
-    name='uit-nlp/vietnamese_students_feedback',
-    task_type='seq_classification',
+    name="uit-nlp/vietnamese_students_feedback",
+    task_type="seq_classification",
     num_labels=2,
 )
 
 task_nli = Task(
     task_id=1,
-    name='vinli',
-    task_type='seq_classification',
+    name="vinli",
+    task_type="seq_classification",
     num_labels=3,
 )
 
@@ -371,17 +379,17 @@ sa_task_id = torch.tensor([0], dtype=torch.int32)
 zsl_task_id = torch.tensor([1], dtype=torch.int32)
 
 mtl_model = load_mtl_model(
-    encoder='vinai/phobert-base-v2',
-    state_dict_path='./model/models/mtl_models/phobert-v2-mtl-sequence-classification-model-no-config-10-epochs-512-merged-ds/pytorch_model.bin',  # noqa: E501
+    encoder="vinai/phobert-base-v2",
+    state_dict_path="./model/models/mtl_models/checkpoint-25284/pytorch_model.bin",  # noqa: E501
     tasks=tasks,
 )  # noqa: E501
 
-tokenizer = AutoTokenizer.from_pretrained('vinai/phobert-base-v2')
+tokenizer = AutoTokenizer.from_pretrained("vinai/phobert-base-v2")
 
 
 def generate_sa_and_topic(text, candidate_labels, hypothesis_template, multi_label):
-    candidate_labels = candidate_labels.split(',')
-    multi_label = True if multi_label == 'True' else False
+    candidate_labels = candidate_labels.split(",")
+    multi_label = True if multi_label == "True" else False
     processed_text = preprocess_text(text)
 
     sa_prediction_dict = sa_classifier(
@@ -391,7 +399,7 @@ def generate_sa_and_topic(text, candidate_labels, hypothesis_template, multi_lab
         sa_task_id=sa_task_id,
     )
 
-    zsl_prediction, prob_zsl_prediction = zsl_classifier(
+    zsl_prediction_dict = zsl_classifier(
         model=mtl_model,
         tokenizer=tokenizer,
         premise=processed_text,
@@ -401,30 +409,34 @@ def generate_sa_and_topic(text, candidate_labels, hypothesis_template, multi_lab
         multi_label=multi_label,
     )
 
-    return sa_prediction_dict, f'{zsl_prediction} -- Probability: {prob_zsl_prediction}'  # noqa: E501
+    return sa_prediction_dict, zsl_prediction_dict  # noqa: E501
 
 
-with gr.Blocks(theme=gr.themes.Soft(primary_hue='pink', secondary_hue='yellow')) as demo:  # noqa: E501
+with gr.Blocks(
+    theme=gr.themes.Soft(primary_hue="pink", secondary_hue="yellow")
+) as demo:  # noqa: E501
     with gr.Row():
         with gr.Column():
-            seed = gr.Text(label='Input Phrase', autofocus=True)
+            seed = gr.Text(label="Input Phrase", autofocus=True)
             candidate_labels = gr.Text(
-                label='Candidate Labels',
-                value='tin tức, thể thao, giải trí, game, khoa học, công nghệ, tài chính, y tế, cuộc sống, giáo dục',  # noqa: E501
+                label="Candidate Labels",
+                value="tin tức, thể thao, giải trí, game, khoa học, công nghệ, tài chính, y tế, cuộc sống, giáo dục",  # noqa: E501
             )
             hypothesis_template = gr.Text(
-                label='Hypothesis Template',
-                value='Đây là một câu nói có nội dung liên quan tới chủ đề {}',
+                label="Hypothesis Template",
+                value="Đây là một câu nói có nội dung liên quan tới chủ đề {}",
             )
             multi_label = gr.Dropdown(
-                label='Multi-label', choices=['True', 'False'], value='False',
+                label="Multi-label",
+                choices=["True", "False"],
+                value="False",
             )
         with gr.Column():
             sentiment_analysis = gr.Label(
-                label='Sentiment Analysis Prediction',
+                label="Sentiment Analysis Prediction",
             )
-            topic_zsl = gr.Text(label='Topic Prediction')
-    btn = gr.Button('Generate')
+            topic_zsl = gr.Label(label="Topic Prediction")
+    btn = gr.Button("Generate")
     btn.click(
         generate_sa_and_topic,
         inputs=[seed, candidate_labels, hypothesis_template, multi_label],
@@ -432,13 +444,13 @@ with gr.Blocks(theme=gr.themes.Soft(primary_hue='pink', secondary_hue='yellow'))
     )
     gr.Examples(
         [
-            'Giảng viên nhiệt tình giảng dạy hiệu quả bằng tiếng anh',
-            'Thách thức danh hài là một chương trình tìm kiếm tài năng diễn xuất',
-            'Ca nghi nhiễm được xác định là một chuyên viên thuộc lĩnh vực kiểm toán',
+            "thỏa thuận thực tế của nhà băng với khách gửi nhiều tiền về mức lãi suất là một thỏa thuận riêng tư chỉ người trong cuộc mới có thể biết rõ tường tận",
+            "do trình độ tiếng anh của lớp không cao chỉ một số ít có khả năng nghe đọc và hiểu được bài giảng của thấy nên hiệu quả của việc giảng dạy bằng tiếng anh là chưa cao",
+            "Tôi thật sự không thích lớp học của ông ấy nhưng vì có crush nên tôi thích đi học mỗi ngày",
         ],
         inputs=[seed],
     )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     demo.launch(share=True)

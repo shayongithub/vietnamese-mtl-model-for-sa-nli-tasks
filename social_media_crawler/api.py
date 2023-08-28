@@ -106,67 +106,6 @@ def Youtube(
     return convert_to_json(data)
 
 
-@app.get('/Appstore')
-def Appstore(
-    url: str, max_count: int,
-    save_type: SaveType,
-    lookup_period: Optional[str] = '5Y',
-    save_path: Optional[str] = None,
-):
-
-    url = url.replace(' ', '')
-    urls = list(url.split(','))
-    data = get_appstore_comment(urls, max_count, lookup_period)
-
-    logger.success(f'Total crawled rows: {data.shape[0]}')
-
-    if save_type != 'postgreSql':
-        OutputDataType[save_type].value(data, save_path)
-    else:
-        store_data_to_db.store_to_db(data, 'appstore')
-
-    return convert_to_json(data)
-
-
-@app.get('/Playstore')
-def Playstore(
-    url: str, save_type: SaveType,
-    max_count: int,
-    lookup_period: Optional[str] = '5Y',
-    save_path: Optional[str] = None,
-):
-
-    url = url.replace(' ', '')
-    urls = list(url.split(','))
-    data = get_playstore_comment(urls, max_count, lookup_period)
-
-    logger.success(f'Total crawled rows: {data.shape[0]}')
-
-    if save_type != 'postgreSql':
-        OutputDataType[save_type].value(data, save_path)
-    else:
-        store_data_to_db.store_to_db(data, 'playstore')
-
-    return convert_to_json(data)
-
-
-@app.get('/Reddit')
-def Reddit(
-    url: str, save_type: SaveType,
-    max_count: int, lookup_period: Optional[str] = '5Y',
-    save_path: Optional[str] = None,
-):
-    data = get_reddit_comment(url, max_count, lookup_period)
-    logger.success(f'Total crawled rows: {data.shape[0]}')
-
-    if save_type != 'postgreSql':
-        OutputDataType[save_type].value(data, save_path)
-    else:
-        store_data_to_db.store_to_db(data, 'playstore')
-
-    return convert_to_json(data)
-
-
 @app.get('/Google_News')
 def News(
     query: str,

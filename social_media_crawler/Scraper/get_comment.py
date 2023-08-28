@@ -4,132 +4,15 @@ from typing import Optional
 
 import pandas as pd
 from loguru import logger
-from Scraper.appstore_scrapper import AppStoreScrapperConfig
-from Scraper.appstore_scrapper import AppStoreScrapperSource
 from Scraper.google_news_source import GoogleNewsConfigV2
 from Scraper.google_news_source import GoogleNewsSource
-from Scraper.playstore_scrapper import PlayStoreScrapperConfig
-from Scraper.playstore_scrapper import PlayStoreScrapperSource
-from Scraper.reddit_scrapper import RedditScrapperConfig
-from Scraper.reddit_scrapper import RedditScrapperSource
 from Scraper.website_crawler_source import TrafilaturaCrawlerConfig
 from Scraper.website_crawler_source import TrafilaturaCrawlerSource
 from Scraper.youtube_scrapper import YoutubeScrapperConfig
 from Scraper.youtube_scrapper import YoutubeScrapperSource
 
-# get appstore comment
-
-
-def get_appstore_comment(urls, max_count, lookup_period):
-    try:
-        id = []
-        author_name = []
-        title = []
-        content = []
-        rating = []
-        platform = []
-        for url in urls:
-            try:
-                source_config = AppStoreScrapperConfig(
-                    app_url=url,
-                    lookup_period=lookup_period,
-                    max_count=max_count,
-                )
-                source = AppStoreScrapperSource()
-                source_data = source.lookup(source_config)
-                for i in range(0, max_count):
-                    source_data[i] = dict(source_data[i])
-                    id.append(source_data[i]['meta']['id'])
-                    author_name.append(source_data[i]['meta']['author_name'])
-                    title.append(source_data[i]['meta']['title'])
-                    content.append(source_data[i]['meta']['content'])
-                    rating.append(source_data[i]['meta']['rating'])
-                    platform.append('Appstore')
-                df = pd.DataFrame(
-                    list(zip(id, author_name, title, content, rating, platform)), columns=[
-                        'id', 'author', 'title', 'content', 'rating', 'source',
-                    ],
-                )
-            except Exception:
-                pass
-    except Exception:
-        raise ValueError('Your configuration is not valid!')
-    return df
-
-# get playstore comment
-
-
-def get_playstore_comment(urls, max_count, lookup_period):
-    try:
-        userName = []
-        content = []
-        rating = []
-        id = []
-        title = []
-        platform = []
-        for url in urls:
-            try:
-                source_config = PlayStoreScrapperConfig(
-                    app_url=url,
-                    max_count=max_count,
-                    lookup_period=lookup_period,
-                )
-                source = PlayStoreScrapperSource()
-                data = source.lookup(source_config)
-                for h in range(0, max_count):
-                    data[h] = dict(data[h])
-                    userName.append(data[h]['meta']['userName'])
-                    content.append(data[h]['meta']['content'])
-                    rating.append(data[h]['meta']['score'])
-                    id.append(data[h]['meta']['reviewId'])
-                    title.append(None)
-                    platform.append('Playstore')
-                df = pd.DataFrame(
-                    list(zip(id, userName, title, content, rating, platform)), columns=[
-                        'id', 'author', 'title', 'content', 'rating', 'source',
-                    ],
-                )
-            except Exception:
-                pass
-    except Exception:
-        raise ValueError('Your configuration is not valid!')
-    return df
-
-# get reddit comment
-
-
-def get_reddit_comment(max_comment, url, period):
-    source_config = RedditScrapperConfig(
-        url=url,
-        lookup_period=period,
-    )
-    source = RedditScrapperSource()
-    data_source = source.lookup(source_config)
-    extracted_text = []
-    author = []
-    id = []
-    title = []
-    rating = []
-    platform = []
-    for i in range(1, max_comment):
-        data_source[i] = dict(data_source[i])
-        extracted_text.append(data_source[i]['meta']['extracted_text'])
-        author.append(data_source[i]['meta']['author_name'])
-        id.append(data_source[i]['meta']['id'])
-        title.append(None)
-        rating.append(None)
-        platform.append('Reddit')
-    df = pd.DataFrame(
-        list(zip(id, author, title, extracted_text, rating, platform)), columns=[
-            'id', 'author', 'title', 'content', 'rating', 'source',
-        ],
-    )
-
-    return df
 
 # Get google news comment
-
-
 def get_google_news(query, max_pages, lookup_period, language, country):
     try:
         userName = []
