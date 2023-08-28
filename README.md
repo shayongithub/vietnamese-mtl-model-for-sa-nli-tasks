@@ -13,7 +13,7 @@ conda create -n vi_mtl_project python=3.9.16
 After creating new virtual environment, we first of all need to install PyTorch, which is the core package of this project. This project uses the PyTorch with CUDA 11.8, you can install with the following instructions:
 
 ```
-pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+pip install torch torchvision torchaudio --index-url --no-cache-dir https://download.pytorch.org/whl/cu118
 ```
 
 Then, `cd vietnamese-mtl-model-for-sa-nli-tasks` and run the following commands:
