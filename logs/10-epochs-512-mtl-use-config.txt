@@ -1,0 +1,26 @@
+***** Running Evaluation *****
+  Num examples = 2289
+  Batch size = 8
+***** eval for task Task(task_id=0, name='uit-nlp/vietnamese_students_feedback', task_type='seq_classification', num_labels=2) metrics *****
+  epoch                   =       10.0
+  eval_accuracy           =      0.967
+  eval_f1                 =     0.9686
+  eval_loss               =      0.227
+  eval_precision          =     0.9757
+  eval_recall             =     0.9616
+  eval_runtime            = 0:00:36.30
+  eval_samples            =          2
+  eval_samples_per_second =     82.596
+  eval_steps_per_second   =     10.328
+--------------------------------------------
+***** eval for task Task(task_id=1, name='vinli', task_type='seq_classification', num_labels=3) metrics *****
+  epoch                   =       10.0
+  eval_accuracy           =     0.7152
+  eval_f1                 =     0.7148
+  eval_loss               =     1.9119
+  eval_precision          =     0.7147
+  eval_recall             =     0.7152
+  eval_runtime            = 0:00:27.70
+  eval_samples            =          2
+  eval_samples_per_second =      82.63
+  eval_steps_per_second   =      10.36
