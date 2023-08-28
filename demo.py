@@ -380,7 +380,7 @@ zsl_task_id = torch.tensor([1], dtype=torch.int32)
 
 mtl_model = load_mtl_model(
     encoder="vinai/phobert-base-v2",
-    state_dict_path="./model/models/mtl_models/checkpoint-25284/pytorch_model.bin",  # noqa: E501
+    state_dict_path="./model/mtl_models/checkpoint-25284/pytorch_model.bin",  # noqa: E501
     tasks=tasks,
 )  # noqa: E501
 
